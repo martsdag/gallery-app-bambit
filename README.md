@@ -18,7 +18,6 @@
 - **Закрепленный заголовок: шапка таблицы фиксируется при прокрутке.**
 
 ## Установка и запуск 
-
-git clone
-npm install
-npm run dev
+- **git clone**
+- **npm install** 
+- **npm run dev**
