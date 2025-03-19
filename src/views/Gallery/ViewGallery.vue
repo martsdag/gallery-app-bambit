@@ -5,8 +5,8 @@
     >
       <div v-if="error" class="p-4 text-red-500 text-center">{{ error }}</div>
 
-      <div v-else class="overflow-auto h-[600px]">
-        <table class="w-full table-fixed" ref="tableRef">
+      <div v-else class="overflow-auto h-[600px]" ref="table">
+        <table class="w-full table-fixed">
           <thead>
             <tr class="bg-indigo-400 sticky top-[-1px] z-10">
               <th
@@ -15,14 +15,14 @@
                 :key="column.key"
                 @click="onClickSort(column.key)"
               >
-                {{ column.label }}
+                {{ column.text }}
               </th>
             </tr>
           </thead>
           <tbody>
             <template v-if="loading">
               <tr v-for="n in 10" :key="n">
-                <td v-for="column in columns" class="p-2 border border-solid border-indigo-400" :key="column.key">
+                <td v-for="column in columns" class="cell-table" :key="column.key">
                   <el-skeleton animated>
                     <el-skeleton-item variant="text" style="width: 100%" />
                   </el-skeleton>
@@ -32,24 +32,19 @@
 
             <template v-else>
               <tr v-for="photo in visiblePhotos" class="border-b" :key="photo.id">
-                <td class="p-2 border border-solid border-indigo-400 hover:bg-indigo-50">{{ photo.id }}</td>
-                <td class="p-2 border border-solid border-indigo-400 hover:bg-indigo-50">{{ photo.albumId }}</td>
-                <td
-                  :title="photo.title"
-                  class="p-2 border border-solid border-indigo-400 w-10 truncate overflow-hidden hover:bg-indigo-50"
-                >
+                <td class="cell-table">
+                  {{ photo.id }}
+                </td>
+                <td class="cell-table">
+                  {{ photo.albumId }}
+                </td>
+                <td :title="photo.title" class="cell-table w-10 truncate overflow-hidden">
                   {{ photo.title }}
                 </td>
-                <td
-                  :title="photo.url"
-                  class="p-2 border border-solid border-indigo-400 w-10 truncate overflow-hidden hover:bg-indigo-50"
-                >
+                <td :title="photo.url" class="cell-table w-10 truncate overflow-hidden">
                   {{ photo.url }}
                 </td>
-                <td
-                  :title="photo.thumbnailUrl"
-                  class="p-2 border border-solid border-indigo-400 w-10 truncate overflow-hidden hover:bg-indigo-50"
-                >
+                <td :title="photo.thumbnailUrl" class="cell-table w-10 truncate overflow-hidden">
                   {{ photo.thumbnailUrl }}
                 </td>
               </tr>
@@ -64,35 +59,36 @@
 <script setup lang="ts">
 import { usePhotoStore } from '@/stores/photos';
 import { storeToRefs } from 'pinia';
-import { ref, computed } from 'vue';
-import { useInfiniteScroll } from '@vueuse/core';
+import { ref, computed, useTemplateRef } from 'vue';
+import { useInfiniteScroll, useToggle } from '@vueuse/core';
 
 const photoStore = usePhotoStore();
 const { photos, loading, error } = storeToRefs(photoStore);
 
-const itemsPerPage = ref(30);
-const tableRef = ref<HTMLDivElement | null>(null);
+const photosInPage = ref(30);
+const table = useTemplateRef('table');
 const sortByCategory = ref<string | null>(null);
-const sortDirection = ref<'asc' | 'desc'>('asc');
+
+const [sortDirection, toggleSortDirection] = useToggle<'asc' | 'desc'>('asc');
 
 const columns = [
-  { key: 'id', label: 'Ид' },
-  { key: 'albumId', label: 'Альбом' },
-  { key: 'title', label: 'Название' },
-  { key: 'url', label: 'Ссылка' },
-  { key: 'thumbnailUrl', label: 'Миниатюра' },
+  { key: 'id', text: 'Ид' },
+  { key: 'albumId', text: 'Альбом' },
+  { key: 'title', text: 'Название' },
+  { key: 'url', text: 'Ссылка' },
+  { key: 'thumbnailUrl', text: 'Миниатюра' },
 ];
 
 const onClickSort = (column: string) => {
   if (sortByCategory.value === column) {
-    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+    toggleSortDirection();
   } else {
     sortByCategory.value = column;
     sortDirection.value = 'asc';
   }
 
-  itemsPerPage.value = 30;
-  tableRef.value?.scrollTo({ top: 0, behavior: 'smooth' });
+  photosInPage.value = 30;
+  table.value?.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 const sortedPhotos = computed(() => {
@@ -111,8 +107,8 @@ const sortedPhotos = computed(() => {
       return 0;
     }
 
-    const valA = a[category as keyof typeof a];
-    const valB = b[category as keyof typeof b];
+    const valA = a[category];
+    const valB = b[category];
 
     if (valA > valB) {
       return sortDirection.value === 'asc' ? 1 : -1;
@@ -125,13 +121,13 @@ const sortedPhotos = computed(() => {
   });
 });
 
-const loadMoreItems = () => {
-  itemsPerPage.value += 20;
+const loadMorePhotos = () => {
+  photosInPage.value += 20;
 };
 
-useInfiniteScroll(tableRef, loadMoreItems, { distance: 10 });
+useInfiniteScroll(table, loadMorePhotos, { distance: 10 });
 
-const visiblePhotos = computed(() => sortedPhotos.value.slice(0, itemsPerPage.value));
+const visiblePhotos = computed(() => sortedPhotos.value.slice(0, photosInPage.value));
 
 photoStore.searchPhotos([]);
 </script>
