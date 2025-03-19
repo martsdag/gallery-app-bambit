@@ -6,19 +6,4 @@ html,
 body {
   font-family: "Raleway", sans-serif;
   font-weight: 300;
-  font-size: 1rem;
-}
-
-._container {
-  width: 90%;
-  margin: 0 auto;
-  max-width: 75rem;
-}
-
-._page {
-  padding: 1rem 0;
-}
-
-.category {
-  padding: 0.5rem;
 }

@@ -1,17 +1,17 @@
 <template>
-  <div class="_container _page flex justify-center items-start min-h-screen p-4">
+  <div class="py-4 px-0 w-[90%] m-auto flex justify-center items-start min-h-screen p-4">
     <div
       class="max-w-[600px] w-full bg-indigo-100 shadow-lg rounded-sm overflow-x-auto border border-solid border-indigo-200"
     >
       <div v-if="error" class="p-4 text-red-500 text-center">{{ error }}</div>
 
-      <div v-else class="overflow-auto h-[600px]" ref="tableRef">
-        <table class="w-full table-fixed">
+      <div v-else class="overflow-auto h-[600px]">
+        <table class="w-full table-fixed" ref="tableRef">
           <thead>
             <tr class="bg-indigo-400 sticky top-[-1px] z-10">
               <th
                 v-for="column in columns"
-                class="category hover:bg-indigo-300 cursor-pointer overflow-hidden text-ellipsis border border-solid border-indigo-600"
+                class="p-2 hover:bg-indigo-300 cursor-pointer overflow-hidden text-ellipsis border border-solid border-indigo-600"
                 :key="column.key"
                 @click="onClickSort(column.key)"
               >
@@ -64,7 +64,7 @@
 <script setup lang="ts">
 import { usePhotoStore } from '@/stores/photos';
 import { storeToRefs } from 'pinia';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useInfiniteScroll } from '@vueuse/core';
 
 const photoStore = usePhotoStore();
@@ -133,7 +133,5 @@ useInfiniteScroll(tableRef, loadMoreItems, { distance: 10 });
 
 const visiblePhotos = computed(() => sortedPhotos.value.slice(0, itemsPerPage.value));
 
-onMounted(() => {
-  photoStore.searchPhotos([]);
-});
+photoStore.searchPhotos([]);
 </script>

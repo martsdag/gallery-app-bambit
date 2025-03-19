@@ -1,6 +1,6 @@
 import { client } from '@/api/_client';
 
-export interface Photo {
+export interface Gallery {
   id: number;
   title: string;
   url: string;
@@ -9,9 +9,7 @@ export interface Photo {
 }
 
 export const fetchPhotos = async (albumIds: number[] = []) => {
-  const query = albumIds.length ? albumIds.map((id) => `albumId=${id}`).join('&') : '';
+  const query = albumIds.map((id) => `albumId=${id}`).join('&');
 
-  const response = await client(`/photos${query ? '?' + query : ''}`);
-
-  return response;
+  return client<Gallery[]>(`/photos?${query}`);
 };
